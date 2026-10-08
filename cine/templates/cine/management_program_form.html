@@ -1,0 +1,70 @@
+{% extends "cine/base.html" %}
+{% load static %}
+{% block title %}{% if creating %}Agregar película{% else %}Editar película{% endif %}{% endblock %}
+{% block content %}
+<section class="wrap manage manage-form-page">
+  <p><a href="{% url 'management_dashboard' %}">← Volver a gestionar la cartelera</a></p>
+  <p class="eyebrow">Panel de administración</p>
+  <h1>{% if creating %}Agregar película o programa{% else %}Editar {{ program.title }}{% endif %}</h1>
+  <p class="muted">Completá los datos y, si ya tenés horarios, agregá las funciones acá mismo.</p>
+  <form method="post" enctype="multipart/form-data" class="manage-form">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="flash flash-error">{{ form.non_field_errors }}</div>{% endif %}
+    <section class="manage-section">
+      <h2>1. Datos del programa</h2>
+      {% if program.poster_image %}<p><img class="manage-current-poster" src="{{ program.poster_image.url }}" alt="Afiche actual"></p>{% endif %}
+      <div class="manage-fields">
+        {% for field in form %}
+          <div class="manage-field {% if field.field.widget.input_type == 'checkbox' %}manage-check{% endif %}">
+            {% if field.field.widget.input_type == 'checkbox' %}{{ field }}<label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {% else %}<label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% endif %}
+            {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+            {% for error in field.errors %}<span class="manage-error">{{ error }}</span>{% endfor %}
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+    <section class="manage-section">
+      <h2>2. Funciones y capacidad</h2>
+      <p class="muted">Agregá tantas funciones como necesites, incluso varias el mismo día. No se permiten dos funciones en la misma sala y horario. Las salas 2D y 4D sí pueden tener funciones en paralelo.</p>
+      {{ screenings.management_form }}
+      {% if screenings.non_form_errors %}<div class="flash flash-error">{{ screenings.non_form_errors }}</div>{% endif %}
+      <div class="manage-repeat-list" id="screening-forms">
+        {% for item in screenings %}
+          {% include "cine/management_screening_row.html" with item=item %}
+        {% endfor %}
+      </div>
+      <template id="screening-empty-form">{% include "cine/management_screening_row.html" with item=screenings.empty_form %}</template>
+      <button class="btn btn-ghost" id="add-screening" type="button">＋ Agregar otra función</button>
+    </section>
+    <section class="manage-section">
+      <h2>3. Cortometrajes incluidos</h2>
+      <p class="muted">Si el programa reúne varios cortos, cargalos aquí; cada fila es opcional.</p>
+      {{ shorts.management_form }}
+      {% if shorts.non_form_errors %}<div class="flash flash-error">{{ shorts.non_form_errors }}</div>{% endif %}
+      <div class="manage-repeat-list">
+        {% for item in shorts %}
+          <div class="manage-repeat">
+            {% for hidden in item.hidden_fields %}{{ hidden }}{% endfor %}
+            {% if item.non_field_errors %}<div class="manage-error">{{ item.non_field_errors }}</div>{% endif %}
+            <div class="manage-fields">
+              {% for field in item.visible_fields %}
+                <div class="manage-field {% if field.name == 'DELETE' %}manage-check{% endif %}">
+                  {% if field.name == "DELETE" %}{{ field }}<label for="{{ field.id_for_label }}">Quitar este corto</label>
+                  {% else %}<label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% endif %}
+                  {% for error in field.errors %}<span class="manage-error">{{ error }}</span>{% endfor %}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+    <div class="manage-submit">
+      <button class="btn" type="submit">Guardar película y funciones</button>
+      <a class="btn btn-ghost" href="{% url 'management_dashboard' %}">Cancelar</a>
+    </div>
+  </form>
+</section>
+<script src="{% static 'cine/js/management.js' %}" defer></script>
+{% endblock %}

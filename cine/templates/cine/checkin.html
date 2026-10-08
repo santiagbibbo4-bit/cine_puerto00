@@ -1,0 +1,21 @@
+{% extends "cine/base.html" %}
+{% block title %}Boletería{% endblock %}
+{% block content %}
+<section class="narrow">
+  <h1>Boletería · validar reserva</h1>
+  <p>Ingresá el código manualmente o leelo desde el QR. Cada reserva grupal permite un único check-in.</p>
+  <form method="post" class="form">{% csrf_token %}
+    {% for error in form.code.errors %}<div class="flash flash-error">{{ error }}</div>{% endfor %}
+    <label>{{ form.code.label }}{{ form.code }}</label>
+    <button class="btn" type="submit">Validar e ingresar</button>
+  </form>
+  {% if result %}
+    <div class="flash {% if result == 'ok' %}flash-ok{% else %}flash-error{% endif %}" role="status">
+      {% if result == "ok" %}Ingreso autorizado. Reserva {{ reservation.code }} · {{ reservation.quantity }} entrada{{ reservation.quantity|pluralize:"s" }} · {{ reservation.screening.program.title }}.
+      {% elif result == "not_found" %}No encontramos una reserva con ese código.
+      {% elif result == "cancelled" %}La reserva está cancelada; no se puede validar.
+      {% else %}Este código ya fue utilizado. El ingreso grupal solo se autoriza una vez.{% endif %}
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

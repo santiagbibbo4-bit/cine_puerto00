@@ -1,0 +1,8 @@
+{% extends "cine/base.html" %}
+{% block title %}Verificar email{% endblock %}
+{% block content %}
+<section class="narrow"><h1>Verificar tu email</h1>
+  {% if valid %}<p>Confirmá para activar tu cuenta y poder reservar entradas.</p><form method="post">{% csrf_token %}<button class="btn" type="submit">Confirmar mi email</button></form>
+  {% else %}<div class="flash flash-error">El enlace no es válido o venció. Ingresá para pedir uno nuevo.</div><a class="btn" href="{% url 'login' %}">Ingresar</a>{% endif %}
+</section>
+{% endblock %}

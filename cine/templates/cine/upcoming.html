@@ -1,0 +1,14 @@
+{% extends "cine/base.html" %}
+{% block title %}Próximos estrenos{% endblock %}
+{% block content %}
+<section class="wrap">
+  <h1>Próximos estrenos</h1>
+  {% if programs %}<div class="grid">
+    {% for program in programs %}
+      <article class="card"><a class="card-media" href="{% url 'program_detail' program.pk %}">
+        {% if program.poster_image %}<img class="poster" src="{{ program.poster_image.url }}" alt="Afiche de {{ program.title }}" loading="lazy">{% elif program.poster %}<img class="poster" src="{{ program.poster }}" alt="Afiche de {{ program.title }}" loading="lazy">{% else %}<div class="poster ph">{{ program.title }}</div>{% endif %}
+      </a><div class="card-body"><p class="eyebrow">Estreno: {{ program.release_date|date:"d/m/Y" }}</p><h3><a href="{% url 'program_detail' program.pk %}">{{ program.title }}</a></h3><p>{{ program.synopsis|truncatechars:150 }}</p><a class="btn btn-small btn-ghost" href="{% url 'program_detail' program.pk %}">Ver ficha</a></div></article>
+    {% endfor %}
+  </div>{% else %}<p class="muted">Todavía no anunciamos próximos estrenos.</p>{% endif %}
+</section>
+{% endblock %}

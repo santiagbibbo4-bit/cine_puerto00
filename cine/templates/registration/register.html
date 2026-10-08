@@ -1,0 +1,15 @@
+{% extends "cine/base.html" %}
+{% block title %}Crear cuenta{% endblock %}
+{% block content %}
+<section class="narrow">
+  <h1>Crear cuenta</h1>
+  <form method="post" class="form" autocomplete="on">{% csrf_token %}
+    {% for field in form %}
+      <label{% if field.name == "accept_terms" %} class="check"{% endif %}>{{ field }} {{ field.label }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}{% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</label>
+    {% endfor %}
+    {% for error in form.non_field_errors %}<div class="flash flash-error">{{ error }}</div>{% endfor %}
+    <button class="btn" type="submit">Crear cuenta</button>
+  </form>
+  <p>¿Ya tenés cuenta? <a href="{% url 'login' %}">Ingresá</a>.</p>
+</section>
+{% endblock %}

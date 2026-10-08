@@ -1,0 +1,63 @@
+{% extends "cine/base.html" %}
+{% block title %}Administración simple{% endblock %}
+{% block content %}
+<section class="wrap manage">
+  <div class="manage-heading">
+    <div>
+      <p class="eyebrow">Panel de administración</p>
+      <h1>Gestioná la cartelera</h1>
+      <p class="muted">Cargá el programa y sus funciones desde una sola pantalla. No hace falta entrar a varias secciones.</p>
+    </div>
+    <a class="btn" href="{% url 'manage_program_create' %}">＋ Agregar película o programa</a>
+  </div>
+  <div class="manage-help">
+    <strong>¿Dónde aparece lo que publicás?</strong>
+    <span>Con fecha de estreno futura aparece en <b>Próximos estrenos</b>. Al llegar esa fecha, y con al menos una función publicada, aparece en <b>Cartelera</b>. Marcá “Destacado” para mostrarlo también en el carrusel de Inicio. Sin fecha ni función, usá “Destacado” para que el público pueda encontrarlo.</span>
+  </div>
+  <h2>Películas y programas</h2>
+  {% if programs %}
+    <div class="manage-list">
+      {% for program in programs %}
+        <article class="manage-card">
+          <div class="manage-card-main">
+            <div class="manage-poster">
+              {% if program.poster_image %}<img src="{{ program.poster_image.url }}" alt="">
+              {% elif program.poster %}<img src="{{ program.poster }}" alt="">
+              {% else %}<span>🎬</span>{% endif %}
+            </div>
+            <div>
+              <h3>{{ program.title }}</h3>
+              <div class="meta">
+                <span class="badge {% if program.status == 'published' %}manage-published{% else %}manage-draft{% endif %}">{% if program.status == 'published' %}Publicado{% else %}Borrador{% endif %}</span>
+                {% if program.featured %}<span class="badge">Destacado en Inicio</span>{% endif %}
+                {% if program.release_date %}<span>{% if program.release_date > today %}Estreno {{ program.release_date|date:"d/m/Y" }}{% else %}Estrenó {{ program.release_date|date:"d/m/Y" }}{% endif %}</span>{% endif %}
+              </div>
+              <p class="muted">{{ program.short_count }} corto{{ program.short_count|pluralize }} · {{ program.screenings.all|length }} función{{ program.screenings.all|length|pluralize }}</p>
+              {% if not program.screenings.all %}
+                <p class="manage-warning">Todavía no tiene funciones: no aparece en Cartelera. Agregá una función para publicarlo allí.</p>
+              {% else %}
+                <ul class="manage-screenings">
+                  {% for screening in program.screenings.all %}
+                    <li>{{ screening.starts_at|date:"d/m/Y H:i" }} · {{ screening.get_room_display }} · {{ screening.booked_count }}/{{ screening.capacity }} lugares{% if screening.remaining == 0 %} · <strong>Agotada</strong>{% endif %}</li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </div>
+          </div>
+          <div class="manage-card-actions">
+            <a class="btn btn-small btn-ghost" href="{% url 'manage_program_edit' program.pk %}">Editar datos y funciones</a>
+            <form method="post" action="{% url 'manage_program_delete' program.pk %}" class="inline">
+              {% csrf_token %}
+              <button class="linklike danger" type="submit" data-confirm="¿Eliminar este programa y sus funciones? Solo se permite si no tiene reservas.">Eliminar</button>
+            </form>
+            {% if program.status == "published" %}<a class="linklike" href="{% url 'program_detail' program.pk %}" target="_blank" rel="noopener">Ver página</a>{% endif %}
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="manage-empty"><span aria-hidden="true">🎞️</span><h3>Todavía no cargaste películas</h3><p>Agregá un programa, completá sus datos y sumale funciones para que aparezca en Cartelera.</p><a class="btn" href="{% url 'manage_program_create' %}">Agregar la primera</a></div>
+  {% endif %}
+  <p class="manage-advanced"><a href="/admin/django/">Administración avanzada de Django</a></p>
+</section>
+{% endblock %}

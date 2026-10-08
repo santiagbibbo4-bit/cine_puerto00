@@ -1,0 +1,26 @@
+{% extends "cine/base.html" %}
+{% block title %}Reservar{% endblock %}
+{% block content %}
+<section class="narrow">
+  <h1>Reservar entradas</h1>
+  <div class="summary"><h2>{{ screening.program.title }}</h2><p>{{ screening.starts_at|date:"l d/m/Y · H:i" }} hs · Sala {{ screening.room }}</p></div>
+  {% if not user.email_verified %}
+    <div class="flash flash-warn">Primero tenés que verificar tu email para reservar.</div>
+    <form method="post" action="{% url 'resend_verification' %}" class="inline">{% csrf_token %}<button class="linklike">Reenviar email</button></form>
+  {% elif screening.booking_state != "open" %}
+    <div class="flash flash-warn">{% if screening.booking_state == "sold_out" %}Esta función está agotada.{% elif screening.booking_state == "cancelled" %}Esta función fue cancelada.{% else %}Las reservas para esta función ya cerraron.{% endif %}</div>
+  {% else %}
+    <form method="post" class="form">{% csrf_token %}
+      {% for error in form.non_field_errors %}<div class="flash flash-error" role="alert">{{ error }}</div>{% endfor %}
+      {{ form.key }}
+      <label>Cantidad de entradas
+        <select name="quantity" required>
+          {% for option in quantity_options %}<option value="{{ option }}" {% if form.quantity.value|default:1 == option %}selected{% endif %}>{{ option }}</option>{% endfor %}
+        </select>
+      </label>
+      <p class="muted">{{ screening.remaining }} lugares disponibles · Máximo {{ max_tickets }} por reserva. No elegís butacas: los asientos se asignan al llegar. No se paga online.</p>
+      <button class="btn" type="submit">Confirmar reserva</button>
+    </form>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "cine/base.html" %}
+{% block title %}Mis reservas{% endblock %}
+{% block content %}
+<section class="wrap"><h1>Mis reservas</h1>
+  {% if reservations %}<ul class="list">{% for reservation in reservations %}
+    <li class="row"><div><strong>{{ reservation.screening.program.title }}</strong><br><span class="muted">{{ reservation.screening.starts_at|date:"D d/m/Y · H:i" }} hs · {{ reservation.quantity }} entrada{{ reservation.quantity|pluralize:"s" }}</span></div>
+      <div><span class="badge room-{{ reservation.screening.room|lower }}">{{ reservation.screening.get_room_display }}</span><span class="badge st-{{ reservation.status }}">{{ reservation.get_status_display }}</span></div>
+      <a class="btn btn-small btn-ghost" href="{% url 'reservation_detail' reservation.code %}">Ver código</a>
+    </li>
+  {% endfor %}</ul>{% else %}<p class="muted">Todavía no hiciste reservas. <a href="{% url 'program_list' %}">Mirá la cartelera</a>.</p>{% endif %}
+</section>
+{% endblock %}

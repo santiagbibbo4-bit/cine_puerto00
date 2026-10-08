@@ -1,0 +1,42 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{% block description %}Cartelera y reservas de cortometrajes.{% endblock %}">
+  <title>{% block title %}{{ cinema_name }}{% endblock %} · {{ cinema_name }}</title>
+  <link rel="stylesheet" href="{% static 'cine/css/style.css' %}">
+</head>
+<body>
+  <a class="skip" href="#contenido">Saltar al contenido</a>
+  <header class="site-header">
+    <a class="brand" href="{% url 'home' %}"><span class="brand-mark">▰</span> {{ cinema_name }}</a>
+    <input class="nav-toggle" type="checkbox" id="nav-toggle" aria-label="Abrir menú">
+    <label class="nav-burger" for="nav-toggle" aria-hidden="true">☰</label>
+    <nav class="main-nav" aria-label="Principal">
+      <a href="{% url 'home' %}">Inicio</a>
+      <a href="{% url 'program_list' %}">Cartelera</a>
+      <a href="{% url 'upcoming' %}">Próximos estrenos</a>
+      <a href="{% url 'contact' %}">Contacto</a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'my_reservations' %}">Mis reservas</a>
+        {% if user.is_staff %}<a href="{% url 'checkin' %}">Boletería</a><a href="{% url 'management_dashboard' %}">Administración</a>{% endif %}
+        <form method="post" action="{% url 'logout' %}" class="inline">{% csrf_token %}<button class="linklike" type="submit">Salir</button></form>
+      {% else %}
+        <a href="{% url 'login' %}">Ingresar</a>
+        <a href="{% url 'register' %}">Crear cuenta</a>
+      {% endif %}
+    </nav>
+  </header>
+  <main id="contenido">
+    {% for message in messages %}<div class="flash {% if message.tags == 'success' %}flash-ok{% elif message.tags == 'error' %}flash-error{% else %}flash-warn{% endif %}" role="status">{{ message }}</div>{% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">
+    <p>{{ cinema_name }} · {{ cinema_address }} · {{ cinema_email }}</p>
+    <p><a href="{% url 'legal_page' 'privacidad' %}">Privacidad</a> · <a href="{% url 'legal_page' 'condiciones' %}">Términos y condiciones</a></p>
+  </footer>
+  <script src="{% static 'cine/js/site.js' %}" defer></script>
+</body>
+</html>

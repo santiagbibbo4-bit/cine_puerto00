@@ -1,0 +1,20 @@
+{% extends "cine/base.html" %}
+{% block title %}{{ program.title }}{% endblock %}
+{% block description %}{{ program.synopsis|truncatechars:160 }}{% endblock %}
+{% block content %}
+<section class="wrap detail">
+  <div class="detail-head">
+    <div class="detail-poster">{% if program.poster_image %}<img class="poster thumb" src="{{ program.poster_image.url }}" alt="Afiche de {{ program.title }}">{% elif program.poster %}<img class="poster thumb" src="{{ program.poster }}" alt="Afiche de {{ program.title }}">{% else %}<div class="poster thumb ph">{{ program.title }}</div>{% endif %}</div>
+    <div><h1>{{ program.title }}</h1><p class="meta">{% if program.duration_min %}<span>{{ program.duration_min }} min</span>{% endif %}{% if program.age_rating %}<span class="badge age">{{ program.age_rating }}</span>{% endif %}{% if program.release_date %}<span>Estreno: {{ program.release_date|date:"d/m/Y" }}</span>{% endif %}</p>
+      {% for paragraph in program.synopsis.splitlines %}<p>{{ paragraph }}</p>{% endfor %}
+    </div>
+  </div>
+  {% if shorts %}<h2>{% if shorts|length > 1 %}Programa de {{ shorts|length }} cortos{% else %}Cortometraje{% endif %}</h2><ol class="shorts">{% for short in shorts %}<li><strong>{{ short.title }}</strong><span class="muted">{% if short.director %}de {{ short.director }}{% endif %}{% if short.duration_min %} · {{ short.duration_min }} min{% endif %}</span>{% if short.synopsis %}<p>{{ short.synopsis }}</p>{% endif %}</li>{% endfor %}</ol>{% endif %}
+  <h2>Funciones</h2>
+  {% if screenings %}<ul class="screenings big">{% for screening in screenings %}
+    <li class="screening {% if screening.booking_state == 'sold_out' %}is-sold-out{% endif %}"><span class="when"><strong>{{ screening.starts_at|date:"D d/m/Y" }}</strong> · {{ screening.starts_at|date:"H:i" }} hs</span><span class="badge room-{{ screening.room|lower }}">{{ screening.get_room_display }}</span><span class="avail {% if screening.booking_state == 'open' %}ok{% else %}none{% endif %}">{% if screening.booking_state == "sold_out" %}Completa · sin lugares{% elif screening.booking_state == "closed" %}Reservas cerradas{% elif screening.booking_state == "cancelled" %}Función cancelada{% else %}{{ screening.remaining }} lugares disponibles{% endif %}</span>
+    {% if screening.booking_state == "open" %}<a class="btn btn-small" href="{% url 'reserve' screening.pk %}">Reservar</a>{% else %}<span class="btn btn-small btn-disabled">No disponible</span>{% endif %}</li>
+  {% endfor %}</ul>{% else %}<p class="muted">Todavía no hay funciones programadas para este programa.</p>{% endif %}
+  {% if program.trailer_safe %}<h2>Tráiler</h2><div class="trailer"><iframe src="https://www.youtube-nocookie.com/embed/{{ program.trailer_youtube_id }}" title="Tráiler de {{ program.title }}" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>{% endif %}
+</section>
+{% endblock %}

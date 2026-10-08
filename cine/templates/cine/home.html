@@ -1,0 +1,44 @@
+{% extends "cine/base.html" %}
+{% block title %}Inicio{% endblock %}
+{% block content %}
+  {% if featured %}
+    <section class="carousel" data-carousel aria-label="Programas destacados">
+      <div class="slides" tabindex="0">
+        {% for program in featured %}
+          <article class="slide">
+            <div class="slide-art">
+              {% if program.poster_image %}<img src="{{ program.poster_image.url }}" alt="Afiche de {{ program.title }}">{% elif program.poster %}<img src="{{ program.poster }}" alt="Afiche de {{ program.title }}">{% else %}<div class="poster ph">{{ program.title }}</div>{% endif %}
+            </div>
+            <div class="slide-text">
+              <p class="eyebrow">{% if program.short_count > 1 %}Programa de {{ program.short_count }} cortos{% else %}Cortometraje{% endif %}</p>
+              <h2>{{ program.title }}</h2>
+              <p>{{ program.synopsis|truncatechars:180 }}</p>
+              {% if program.next_screening %}<p class="slide-next">Próxima función: <strong>{{ program.next_screening.starts_at|date:"D d/m · H:i" }} hs</strong> · Sala {{ program.next_screening.room }}</p>{% endif %}
+              <p class="actions"><a class="btn" href="{% url 'program_detail' program.pk %}">Ver ficha</a></p>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+      {% if featured|length > 1 %}<button class="car-btn prev" type="button" data-dir="-1" aria-label="Anterior">‹</button><button class="car-btn next" type="button" data-dir="1" aria-label="Siguiente">›</button>{% endif %}
+    </section>
+  {% else %}
+    <section class="hero-empty"><h1>{{ cinema_name }}</h1><p>Pronto vas a encontrar acá nuestra cartelera.</p></section>
+  {% endif %}
+  <section class="wrap">
+    <h2>Próximas funciones</h2>
+    {% if soon %}
+      <ul class="screenings big">
+        {% for screening in soon %}
+          <li class="screening {% if screening.booking_state == 'sold_out' %}is-sold-out{% endif %}">
+            <span class="when"><strong>{{ screening.starts_at|date:"D d/m" }}</strong> · {{ screening.starts_at|date:"H:i" }} hs</span>
+            <a class="title" href="{% url 'program_detail' screening.program_id %}">{{ screening.program.title }}</a>
+            <span class="badge room-{{ screening.room|lower }}">{{ screening.get_room_display }}</span>
+            <span class="avail {% if screening.booking_state == 'open' %}ok{% else %}none{% endif %}">{% if screening.booking_state == "sold_out" %}Completa · sin lugares{% elif screening.booking_state == "closed" %}Reservas cerradas{% elif screening.booking_state == "cancelled" %}Función cancelada{% else %}{{ screening.remaining }} lugares disponibles{% endif %}</span>
+            {% if screening.booking_state == "open" %}<a class="btn btn-small" href="{% url 'reserve' screening.pk %}">Reservar</a>{% else %}<span class="btn btn-small btn-disabled">No disponible</span>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+      <p><a href="{% url 'program_list' %}">Ver toda la cartelera →</a></p>
+    {% else %}<p class="muted">Todavía no hay funciones programadas.</p>{% endif %}
+  </section>
+{% endblock %}

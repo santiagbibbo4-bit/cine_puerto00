@@ -1,0 +1,20 @@
+{% extends "cine/base.html" %}
+{% block title %}Ingresar{% endblock %}
+{% block content %}
+<section class="narrow">
+  <h1>Ingresar</h1>
+  {% if form.errors %}<div class="flash flash-error" role="alert">Email o contraseña incorrectos.</div>{% endif %}
+  {% if not user.is_authenticated and request.GET.next %}{% endif %}
+  <form method="post" class="form" action="{% url 'login' %}">{% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+    <label>Email<input type="email" name="username" autocomplete="email" required maxlength="254" value="{{ form.username.value|default:'' }}"></label>
+    <label>Contraseña<input type="password" name="password" autocomplete="current-password" required></label>
+    <button class="btn" type="submit">Ingresar</button>
+  </form>
+  {% if user.is_authenticated and not user.email_verified %}
+    <div class="flash flash-warn">Tu email todavía no está verificado. No vas a poder reservar hasta completar la verificación.</div>
+    <form method="post" action="{% url 'resend_verification' %}">{% csrf_token %}<button class="linklike">Reenviar email de verificación</button></form>
+  {% endif %}
+  <p>¿No tenés cuenta? <a href="{% url 'register' %}">Creala acá</a>.</p>
+</section>
+{% endblock %}

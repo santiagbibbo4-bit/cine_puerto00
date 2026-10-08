@@ -1,0 +1,14 @@
+{% extends "cine/base.html" %}
+{% block title %}Tu reserva{% endblock %}
+{% block content %}
+<section class="narrow ticket">
+  <h1>Tu reserva</h1>
+  <p><span class="badge st-{{ reservation.status }}">{{ reservation.get_status_display }}</span></p>
+  <div class="summary"><h2>{{ reservation.screening.program.title }}</h2><p>{{ reservation.screening.starts_at|date:"l d/m/Y · H:i" }} hs · Sala {{ reservation.screening.room }}</p></div>
+  <p><strong>{{ reservation.quantity }}</strong> entrada{{ reservation.quantity|pluralize:"s" }} · Los asientos se asignan al llegar.</p>
+  <p class="code">{{ reservation.code|slice:":5" }}-{{ reservation.code|slice:"5:" }}</p>
+  {% if reservation.status != "cancelled" %}<img class="qr" src="data:image/png;base64,{{ qr_data }}" alt="Código QR de la reserva {{ reservation.code }}" width="280" height="280">{% endif %}
+  {% if reservation.status == "confirmed" %}<p class="muted">Mostrá este código o el QR en boletería. El grupo completo se valida una sola vez.</p>{% elif reservation.status == "checked_in" %}<p class="muted">Esta reserva ya se utilizó ({{ reservation.checked_in_at|date:"d/m/Y H:i" }}).</p>{% else %}<p class="muted">Esta reserva fue cancelada.</p>{% endif %}
+  <p><a href="{% url 'my_reservations' %}">← Mis reservas</a></p>
+</section>
+{% endblock %}

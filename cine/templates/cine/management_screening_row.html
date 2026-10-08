@@ -1,0 +1,14 @@
+<div class="manage-repeat screening-form-row">
+  {% for hidden in item.hidden_fields %}{{ hidden }}{% endfor %}
+  {% if item.non_field_errors %}<div class="manage-error">{{ item.non_field_errors }}</div>{% endif %}
+  <div class="manage-fields">
+    {% for field in item.visible_fields %}
+      <div class="manage-field {% if field.name == 'DELETE' %}manage-check{% endif %}">
+        {% if field.name == "DELETE" %}{{ field }}<label for="{{ field.id_for_label }}">Quitar esta función</label>
+        {% else %}<label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% endif %}
+        {% for error in field.errors %}<span class="manage-error">{{ error }}</span>{% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+  {% if item.instance.pk %}<p class="muted">Entradas reservadas: {{ item.instance.booked_count }}. No se puede bajar la capacidad por debajo de ese número.</p>{% endif %}
+</div>
