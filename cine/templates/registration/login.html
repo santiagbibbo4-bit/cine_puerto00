@@ -11,6 +11,7 @@
     <label>Contraseña<input type="password" name="password" autocomplete="current-password" required></label>
     <button class="btn" type="submit">Ingresar</button>
   </form>
+  <p><a href="{% url 'cine_password_reset' %}">¿Olvidaste tu contraseña?</a></p>
   {% if user.is_authenticated and not user.email_verified %}
     <div class="flash flash-warn">Tu email todavía no está verificado. No vas a poder reservar hasta completar la verificación.</div>
     <form method="post" action="{% url 'resend_verification' %}">{% csrf_token %}<button class="linklike">Reenviar email de verificación</button></form>

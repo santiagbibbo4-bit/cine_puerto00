@@ -32,6 +32,8 @@ En VS Code, abrí esta carpeta y seleccioná `.venv\Scripts\python.exe` con **Py
 
 En desarrollo el email se imprime en la terminal. Para probar registro, copiá desde allí la ruta `/verificar-email/...` al navegador. La migración crea textos legales y datos de contacto de ejemplo/incompletos; revisalos en Administración antes de publicar.
 
+Si olvidás la contraseña, desde **Ingresar** elegí **¿Olvidaste tu contraseña?** y seguí el enlace que se envía al email de la cuenta. Con la sesión iniciada, también podés cambiarla desde **Cambiar contraseña** en el menú.
+
 ## Cargar cartelera
 
 Ingresá a `/admin/` con una cuenta de personal (`is_staff`):

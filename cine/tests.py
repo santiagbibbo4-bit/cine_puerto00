@@ -326,3 +326,62 @@ class EmailVerificationExpirationTests(TestCase):
         verification.refresh_from_db()
         self.assertFalse(user.email_verified)
         self.assertIsNone(verification.used_at)
+
+
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+class PasswordManagementTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(email="cine@example.com", password="Una-clave-segura-2026")
+
+    def test_password_reset_sends_email_and_link_can_only_be_used_once(self):
+        response = self.client.post(reverse("cine_password_reset"), {"email": self.user.email})
+        self.assertRedirects(response, reverse("cine_password_reset_done"))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [self.user.email])
+        reset_url = re.search(r"https?://[^\s]+", mail.outbox[0].body).group(0)
+
+        response = self.client.get(reset_url, follow=True)
+        self.assertContains(response, "Crear contraseña nueva")
+        reset_path = response.request["PATH_INFO"]
+        response = self.client.post(
+            reset_path,
+            {
+                "new_password1": "Nueva-clave-segura-2026",
+                "new_password2": "Nueva-clave-segura-2026",
+            },
+        )
+        self.assertRedirects(response, reverse("cine_password_reset_complete"))
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("Nueva-clave-segura-2026"))
+
+        response = self.client.get(reset_url, follow=True)
+        self.assertContains(response, "El enlace ya no es válido")
+
+    def test_password_reset_response_does_not_disclose_unknown_email(self):
+        response = self.client.post(reverse("cine_password_reset"), {"email": "no-existe@example.com"})
+        self.assertRedirects(response, reverse("cine_password_reset_done"))
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_logged_in_user_can_change_password_and_keeps_session(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("cine_password_change"))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post(
+            reverse("cine_password_change"),
+            {
+                "old_password": "Una-clave-segura-2026",
+                "new_password1": "Otra-clave-segura-2026",
+                "new_password2": "Otra-clave-segura-2026",
+            },
+        )
+        self.assertRedirects(response, reverse("cine_password_change_done"))
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("Otra-clave-segura-2026"))
+        self.assertEqual(self.client.get(reverse("my_reservations")).status_code, 200)
+
+    def test_password_change_requires_login(self):
+        response = self.client.get(reverse("cine_password_change"))
+        self.assertRedirects(
+            response,
+            f"{reverse('login')}?next={reverse('cine_password_change')}",
+        )
